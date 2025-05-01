@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 actix-web = "4.10"
 askama = "0.14"
+serde = { version = "1.0", features = ["derive"] }

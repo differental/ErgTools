@@ -7,21 +7,29 @@
 
 <form id="calc-form" class="space-y-4">
     <div>
-        <label class="block font-medium">Splits:</label>
+        <label class="block font-medium">Split Type:</label>
         <div class="mt-1 space-x-4">
-            <label><input type="radio" name="mode" value="time" checked> Time Splits</label>
-            <label><input type="radio" name="mode" value="distance"> Distance Splits</label>
+            <label><input type="radio" name="mode" value="time" checked onchange="toggleInputs()"> Time Splits</label>
+            <label><input type="radio" name="mode" value="distance" onchange="toggleInputs()"> Distance Splits</label>
         </div>
     </div>
 
     <div>
-        <label class="block font-medium">Reference Value (e.g. 500 or 2:00):</label>
-        <input type="text" id="value" class="mt-1 w-full p-2 border border-gray-300 rounded" />
+        <label class="block font-medium">Measured Interval:</label>
+        <input type="text" id="known-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s (e.g., 0:20:00.0)" />
+        <input type="text" id="known-interval-distance" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Distance in metres (e.g., 500)" />
     </div>
 
     <div>
         <label class="block font-medium">Split Data (comma or space separated):</label>
-        <textarea id="splits" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded"></textarea>
+        <textarea id="splits-distance" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Distances in metres (e.g., 500, 1000, 2000)"></textarea>
+        <textarea id="splits-time" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Times in h:mm:ss.s (e.g., 0:02:00.0, 0:04:00.0)"></textarea>
+    </div>
+
+    <div>
+        <label class="block font-medium">Desired Interval:</label>
+        <input type="text" id="target-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s (e.g., 0:20:00.0)" />
+        <input type="text" id="target-interval-distance" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Distance in metres (e.g., 500)" />
     </div>
 
     <button type="button" onclick="submitCalculator()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -34,31 +42,89 @@
 </div>
 
 <script>
-function submitCalculator() {
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    const value = document.getElementById("value").value;
-    const splits = document.getElementById("splits").value;
+    function toggleInputs() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
 
-    fetch('/api/splits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode, value, splitInput: splits })
-    })
-    .then(res => res.json())
-    .then(data => {
-        const container = document.getElementById("calc-result");
-        if (!data || data.length === 0) {
-            container.innerHTML = "<p>No results found.</p>";
+        // Toggle reference value input
+        document.getElementById('known-interval-time').classList.toggle('hidden', mode !== 'time');
+        document.getElementById('known-interval-distance').classList.toggle('hidden', mode !== 'distance');
+
+        // Toggle split data input (note: opposite of reference mode)
+        document.getElementById('splits-time').classList.toggle('hidden', mode !== 'distance');
+        document.getElementById('splits-distance').classList.toggle('hidden', mode !== 'time');
+
+        // Tarhet value
+        document.getElementById('target-interval-time').classList.toggle('hidden', mode !== 'time');
+        document.getElementById('target-interval-distance').classList.toggle('hidden', mode !== 'distance');
+    }
+
+    function validateTimeFormat(str) {
+        // Format: h:mm:ss.s (e.g., 0:02:30.0)
+        return /^\d+:[0-5]\d:[0-5]\d(\.\d)?$/.test(str.trim());
+    }
+
+    function validateDistanceFormat(str) {
+        return /^(\d+\s*[, ]\s*)*\d+$/.test(str.trim());
+    }
+
+    function submitCalculator() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+
+        const knownIntervalStr = mode === 'time'
+            ? document.getElementById("known-interval-time").value.trim()
+            : document.getElementById("known-interval-distance").value.trim();
+
+        const targetIntervalStr = mode === 'time'
+            ? document.getElementById("target-interval-time").value.trim()
+            : document.getElementById("target-interval-distance").value.trim();
+
+        const splitInput = mode === 'time'
+            ? document.getElementById("splits-distance").value.trim()
+            : document.getElementById("splits-time").value.trim();
+
+        // Input validation
+        if (mode === 'time' && (!validateTimeFormat(knownIntervalStr) || !validateTimeFormat(targetIntervalStr))) {
+            alert("Please enter a valid time in h:mm:ss.s format (e.g., 0:20:00.0).");
             return;
         }
-        const rows = data.map(row => `<tr><td class="border px-4 py-2">${row.label}</td><td class="border px-4 py-2">${row.value}</td></tr>`).join('');
-        container.innerHTML = `
-            <table class="w-full border mt-4">
-                <thead><tr><th class="border px-4 py-2">Split</th><th class="border px-4 py-2">Value</th></tr></thead>
-                <tbody>${rows}</tbody>
-            </table>
-        `;
-    });
-}
+
+        if (mode === 'distance' && (isNaN(parseInt(knownIntervalStr) || isNaN(parseInt(targetIntervalStr))))) {
+            alert("Please enter a valid numeric distance (e.g., 500).");
+            return;
+        }
+
+        if (mode === 'time' && !validateDistanceFormat(splitInput)) {
+            alert("Please enter valid numeric distances separated by commas or spaces.");
+            return;
+        }
+
+        if (mode === 'distance' && !splitInput.split(/[, ]+/).every(validateTimeFormat)) {
+            alert("Please enter valid times in h:mm:ss.s format separated by commas or spaces (e.g., 0:02:30.0).");
+            return;
+        }
+
+        fetch('/api/splits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode, knownIntervalStr, targetIntervalStr, splitInput })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById("calc-result");
+            if (!data || data.length === 0) {
+                container.innerHTML = "<p>No results found.</p>";
+                return;
+            }
+            const rows = data.map(row => `<tr><td class="border px-4 py-2">${row.label}</td><td class="border px-4 py-2">${row.value}</td></tr>`).join('');
+            container.innerHTML = `
+                <table class="w-full border mt-4">
+                    <thead><tr><th class="border px-4 py-2">Split</th><th class="border px-4 py-2">Value</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleInputs);
 </script>
 {% endblock %}
