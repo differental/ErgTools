@@ -1,11 +1,15 @@
-use chrono::{Duration, NaiveTime};
+/// Panic if errors, since frontend should guard against invalid formats
+pub fn parse_time(s: &str) -> f64 {
+    let parts: Vec<&str> = s.split(':').collect();
+    if parts.len() != 3 {
+        panic!("Invalid time format");
+    }
 
-const MIDNIGHT: NaiveTime = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
+    let hours: f64 = parts[0].parse().expect("Invalid hours");
+    let minutes: f64 = parts[1].parse().expect("Invalid minutes");
+    let seconds: f64 = parts[2].parse().expect("Invalid seconds");
 
-pub fn parse_time(s: &str) -> Option<f64> {
-    NaiveTime::parse_from_str(s.trim(), "%H:%M:%S%.f")
-        .ok()
-        .map(|t| Duration::from(t.signed_duration_since(MIDNIGHT)).as_seconds_f64())
+    hours * 3600.0 + minutes * 60.0 + seconds
 }
 
 pub fn format_time(secs: f64) -> String {

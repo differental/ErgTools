@@ -1,5 +1,4 @@
 use actix_web::{post, web::Json, HttpResponse, Responder};
-use chrono::{Duration, TimeDelta};
 use serde::{Deserialize, Serialize};
 
 use crate::utils::{format_time, parse_time, process_time_splits};
@@ -39,8 +38,8 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
 
     match mode {
         Mode::Time => {
-            let known = parse_time(&known_interval).expect("Invalid known time format");
-            let target = parse_time(&target_interval).expect("Invalid target time format");
+            let known = parse_time(&known_interval);
+            let target = parse_time(&target_interval);
 
             let splits = split_input
                 .split(|c| c == ',' || c == ' ')
@@ -76,7 +75,7 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
             let splits = split_input
                 .split(|c| c == ',' || c == ' ')
                 .filter(|s| !s.trim().is_empty())
-                .map(|s| parse_time(s).expect("Invalid time format"))
+                .map(|s| parse_time(s))
                 .collect::<Vec<f64>>();
 
             println!("Parsed Distance Mode:\n  known: {}\n  target: {}\n  splits: {:?}", known, target, splits);
