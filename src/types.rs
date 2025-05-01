@@ -1,5 +1,4 @@
 // Shared types
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
