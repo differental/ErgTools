@@ -58,8 +58,6 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
             HttpResponse::Ok().json(result)
         }
         Mode::Distance => {
-            // value is a distance (e.g., "500")
-            // split_input is a comma-separated list of times (e.g., "0:02:00.0, 0:04:00.0")
             let known = known_interval
                 .trim()
                 .parse::<u32>()

@@ -89,7 +89,7 @@
             }
             const rows = data.map(row => `<tr><td class="border px-4 py-2">${row.time}</td><td class="border px-4 py-2">${row.distance}</td><td class="border px-4 py-2">${row.pace}</td><td class="border px-4 py-2">${row.watts}</td></tr>`).join('');
             container.innerHTML = `
-                <table class="w-full border mt-4">
+                <table class="w-full border mt-4 max-w-3xl mx-auto text-center">
                     <thead><tr><th class="border px-4 py-2">Time</th><th class="border px-4 py-2">Distance</th><th class="border px-4 py-2">Pace</th><th class="border px-4 py-2">Watts</th></tr></thead>
                     <tbody>${rows}</tbody>
                 </table>
