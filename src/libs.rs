@@ -92,10 +92,16 @@ pub fn process_concept2_time(data: Vec<Concept2DataPoint>, target_time: f64) -> 
     let mut result = Vec::<(f64, u32)>::new();
 
     for item in data {
-        if item.time_ds as f64  >= next_split_time_ds {
-            let new_dist_dm = last_datapoint_distance_dm + (item.distance_dm as f64 - last_datapoint_distance_dm) / (item.time_ds as f64 - last_datapoint_time_ds) * (next_split_time_ds - last_datapoint_time_ds);
+        if item.time_ds as f64 >= next_split_time_ds {
+            let new_dist_dm = last_datapoint_distance_dm
+                + (item.distance_dm as f64 - last_datapoint_distance_dm)
+                    / (item.time_ds as f64 - last_datapoint_time_ds)
+                    * (next_split_time_ds - last_datapoint_time_ds);
 
-            result.push((next_split_time_ds / 10.0, ((new_dist_dm - cumulative_split_distance_dm) / 10.0) as u32));
+            result.push((
+                target_time,
+                ((new_dist_dm - cumulative_split_distance_dm) / 10.0) as u32,
+            ));
 
             cumulative_split_distance_dm = new_dist_dm;
             next_split_time_ds += target_time * 10.0;
@@ -106,7 +112,48 @@ pub fn process_concept2_time(data: Vec<Concept2DataPoint>, target_time: f64) -> 
     }
 
     // Remaining bits
-    result.push((last_datapoint_time_ds - (next_split_time_ds - target_time * 10.0), ((last_datapoint_distance_dm - cumulative_split_distance_dm) / 10.0) as u32));
+    result.push((
+        (last_datapoint_time_ds - (next_split_time_ds - target_time * 10.0)) / 10.0,
+        ((last_datapoint_distance_dm - cumulative_split_distance_dm) / 10.0) as u32,
+    ));
+
+    result
+}
+
+pub fn process_concept2_distance(data: Vec<Concept2DataPoint>, target_distance: u32) -> Vec<(u32, f64)> {
+    let mut last_datapoint_time_ds = 0.0;
+    let mut last_datapoint_distance_dm = 0.0;
+    let mut cumulative_split_time_ds = 0.0;
+
+    let mut next_split_distance_dm = target_distance as f64 * 10.0;
+
+    let mut result = Vec::<(u32, f64)>::new();
+
+    for item in data {
+        if item.distance_dm as f64 >= next_split_distance_dm {
+            let new_time_ds = last_datapoint_time_ds
+                + (item.time_ds as f64 - last_datapoint_time_ds)
+                    / (item.distance_dm as f64 - last_datapoint_distance_dm)
+                    * (next_split_distance_dm - last_datapoint_distance_dm);
+
+            result.push((
+                target_distance,
+                (new_time_ds - cumulative_split_time_ds) / 10.0,
+            ));
+
+            cumulative_split_time_ds = new_time_ds;
+            next_split_distance_dm += target_distance as f64 * 10.0;
+        } else {
+            last_datapoint_time_ds = item.time_ds as f64;
+            last_datapoint_distance_dm = item.distance_dm as f64;
+        }
+    }
+
+    // Remaining bits
+    result.push((
+        ((last_datapoint_distance_dm - (next_split_distance_dm - target_distance as f64 * 10.0)) / 10.0) as u32,
+        (last_datapoint_time_ds - cumulative_split_time_ds) / 10.0,
+    ));
 
     result
 }

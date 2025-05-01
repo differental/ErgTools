@@ -44,5 +44,3 @@ pub static S3_HEADER: Lazy<HeaderMap> = Lazy::new(|| {
 
     headers
 });
-
-

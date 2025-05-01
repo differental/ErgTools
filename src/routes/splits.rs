@@ -1,11 +1,10 @@
 use actix_web::{HttpResponse, Responder, post, web::Json};
-use serde::{Deserialize};
+use serde::Deserialize;
 
 use crate::constants::PACE_STANDARD;
 use crate::libs::{process_distance_splits, process_time_splits};
 use crate::types::{Mode, SplitResult};
 use crate::utils::{format_time, parse_time};
-
 
 #[derive(Debug, Deserialize)]
 pub struct SplitRequest {
