@@ -16,11 +16,11 @@ pub struct Concept2Request {
     pub target_interval: String,
 }
 
-async fn fetch_concept2_data(url: String) -> Vec<Concept2DataPoint> {
+async fn fetch_concept2_data(url: &str) -> Vec<Concept2DataPoint> {
     let re =
         Regex::new(r"^https://log\.concept2\.com/(?:share|profile)/\d+/(?:log/)?\d+/?$").unwrap();
 
-    if !re.is_match(&url) {
+    if !re.is_match(url) {
         panic!("URL invalid");
     }
 
@@ -72,7 +72,7 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
         target_interval,
     } = req.into_inner();
 
-    let data = fetch_concept2_data(url).await;
+    let data = fetch_concept2_data(url.trim()).await;
 
     match mode {
         Mode::Time => {
