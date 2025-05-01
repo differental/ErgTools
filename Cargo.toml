@@ -6,11 +6,12 @@ license = "AGPL-3.0-only"
 build = "build.rs"
 
 [dependencies]
-actix-files = "0.6"
 actix-web = "4.10"
 askama = "0.14"
+mime_guess = "2.0.5"
 regex = "1.11"
 reqwest = { version = "0.12", features = ["json", "gzip"] }
+rust-embed = "8.7"
 serde = { version = "1.0", features = ["derive"] }
 
 [build-dependencies]

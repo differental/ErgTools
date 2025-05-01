@@ -1,5 +1,6 @@
-use actix_files::Files;
-use actix_web::{App, HttpServer};
+use actix_web::{App, HttpResponse, HttpServer, Responder, web};
+use mime_guess::from_path;
+use rust_embed::RustEmbed;
 
 mod routes;
 use routes::{
@@ -16,6 +17,20 @@ mod types;
 
 mod libs;
 
+#[derive(RustEmbed)]
+#[folder = "static/"]
+struct Assets;
+
+#[actix_web::get("/{_:.*}")]
+async fn serve_embedded_assets(path: web::Path<String>) -> impl Responder {
+    match Assets::get(path.as_str()) {
+        Some(content) => HttpResponse::Ok()
+            .content_type(from_path(path.as_str()).first_or_octet_stream().as_ref())
+            .body(content.data.into_owned()),
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     const ADDR: &str = "127.0.0.1";
@@ -29,7 +44,7 @@ async fn main() -> std::io::Result<()> {
             .service(serve_static_concept2)
             .service(serve_calculator)
             .service(serve_concept2)
-            .service(Files::new("/", "static/"))
+            .service(serve_embedded_assets)
     })
     .bind((ADDR, PORT))?
     .run()
