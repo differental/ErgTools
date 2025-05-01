@@ -119,6 +119,6 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
                 .collect::<Vec<SplitResult>>();
 
             HttpResponse::Ok().json(result)
-        },
+        }
     }
 }

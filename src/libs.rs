@@ -121,7 +121,10 @@ pub fn process_concept2_time(data: Vec<Concept2DataPoint>, target_time: f64) -> 
     result
 }
 
-pub fn process_concept2_distance(data: Vec<Concept2DataPoint>, target_distance: u32) -> Vec<(u32, f64)> {
+pub fn process_concept2_distance(
+    data: Vec<Concept2DataPoint>,
+    target_distance: u32,
+) -> Vec<(u32, f64)> {
     let mut last_datapoint_time_ds = 0.0;
     let mut last_datapoint_distance_dm = 0.0;
     let mut cumulative_split_time_ds = 0.0;
