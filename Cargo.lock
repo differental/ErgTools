@@ -644,6 +644,7 @@ dependencies = [
  "actix-web",
  "askama",
  "html-minifier",
+ "once_cell",
  "regex",
  "reqwest",
  "serde",
