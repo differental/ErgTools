@@ -19,7 +19,7 @@
 
     <div>
         <label class="block font-medium">Desired Interval:</label>
-        <input type="text" id="target-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s (e.g., 0:04:00.0)" />
+        <input type="text" id="target-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s or mm:ss.s (e.g., 04:00.0)" />
         <input type="text" id="target-interval-distance" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Distance in metres (e.g., 500)" />
     </div>
 
@@ -42,8 +42,8 @@
     }
 
     function validateTimeFormat(str) {
-        // Format: h:mm:ss.s (e.g., 0:02:30.0)
-        return /^\d+:[0-5]\d:[0-5]\d(\.\d)?$/.test(str.trim());
+        // Formats: h:mm:ss.s or mm:ss.s (e.g., 0:02:30.0 or 02:30.0)
+        return /^(\d+:)?[0-5]?\d:[0-5]\d(\.\d)?$/.test(str.trim());
     }
 
     function validateUrl(str) {
@@ -57,21 +57,21 @@
             ? document.getElementById("target-interval-time").value.trim()
             : document.getElementById("target-interval-distance").value.trim();
 
-        const url = document.getElementById("url").value;
+        const url = document.getElementById("url").value.trim();
 
         // Input validation
+        if (!validateUrl(url)) {
+            alert("Please enter a valid concept2 workout url.");
+            return;
+        }
+
         if (mode === 'time' && !validateTimeFormat(targetIntervalStr)) {
-            alert("Please enter a valid time in h:mm:ss.s format (e.g., 0:20:00.0).");
+            alert("Please enter a valid time in h:mm:ss.s or mm:ss.s format (e.g., 20:00.0).");
             return;
         }
 
         if (mode === 'distance' && isNaN(parseInt(targetIntervalStr))) {
             alert("Please enter a valid numeric distance (e.g., 500).");
-            return;
-        }
-
-        if (mode === 'time' && !validateUrl(url)) {
-            alert("Please enter a valid concept2 workout url.");
             return;
         }
 

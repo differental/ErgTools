@@ -78,7 +78,7 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
         Mode::Time => {
             let target = parse_time(&target_interval).expect("Invalid target time format");
 
-            let mut cumulative_time = 0_f64;
+            let mut cumulative_time = 0.0;
 
             let result = process_concept2_time(data, target)
                 .iter()
@@ -86,9 +86,9 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
                     cumulative_time += x.0;
                     let raw_pace = x.0 / (x.1 as f64);
                     SplitResult {
-                        time: format_time(cumulative_time),
+                        time: format_time(cumulative_time, false),
                         distance: x.1.to_string(),
-                        pace: format_time(raw_pace * PACE_STANDARD),
+                        pace: format_time(raw_pace * PACE_STANDARD, false),
                         watts: format!("{:.1}", 2.80 * raw_pace.powi(-3)),
                     }
                 })
@@ -102,7 +102,7 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
                 .parse::<u32>()
                 .expect("Invalid target distance");
 
-            let mut cumulative_distance = 0_u32;
+            let mut cumulative_distance = 0;
 
             let result = process_concept2_distance(data, target)
                 .iter()
@@ -110,9 +110,9 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
                     cumulative_distance += x.0;
                     let raw_pace = x.1 / (x.0 as f64);
                     SplitResult {
-                        time: format_time(x.1),
+                        time: format_time(x.1, false),
                         distance: cumulative_distance.to_string(),
-                        pace: format_time(raw_pace * PACE_STANDARD),
+                        pace: format_time(raw_pace * PACE_STANDARD, false),
                         watts: format!("{:.1}", 2.80 * raw_pace.powi(-3)),
                     }
                 })

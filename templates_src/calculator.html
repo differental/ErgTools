@@ -16,19 +16,19 @@
 
     <div>
         <label class="block font-medium">Measured Interval:</label>
-        <input type="text" id="known-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s (e.g., 0:05:00.0)" />
+        <input type="text" id="known-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s or mm:ss.s (e.g., 05:00.0)" />
         <input type="text" id="known-interval-distance" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Distance in metres (e.g., 500)" />
     </div>
 
     <div>
         <label class="block font-medium">Split Data (comma or space separated):</label>
         <textarea id="splits-distance" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Distances in metres (e.g., 1400, 1350, 1450, 1400)"></textarea>
-        <textarea id="splits-time" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Times in h:mm:ss.s (e.g., 0:02:00.0, 0:01:50.0, 0:01:52.1)"></textarea>
+        <textarea id="splits-time" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Times in h:mm:ss.s or mm:ss.s (e.g., 02:00.0, 01:50.0, 01:52.1)"></textarea>
     </div>
 
     <div>
         <label class="block font-medium">Desired Interval:</label>
-        <input type="text" id="target-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s (e.g., 0:04:00.0)" />
+        <input type="text" id="target-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s or mm:ss.s (e.g., 04:00.0)" />
         <input type="text" id="target-interval-distance" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Distance in metres (e.g., 500)" />
     </div>
 
@@ -59,8 +59,8 @@
     }
 
     function validateTimeFormat(str) {
-        // Format: h:mm:ss.s (e.g., 0:02:30.0)
-        return /^\d+:[0-5]\d:[0-5]\d(\.\d)?$/.test(str.trim());
+        // Formats: h:mm:ss.s or mm:ss.s (e.g., 0:02:30.0 or 02:30.0)
+        return /^(\d+:)?[0-5]?\d:[0-5]\d(\.\d)?$/.test(str.trim());
     }
 
     function validateDistanceStrFormat(str) {
@@ -84,7 +84,7 @@
 
         // Input validation
         if (mode === 'time' && (!validateTimeFormat(knownIntervalStr) || !validateTimeFormat(targetIntervalStr))) {
-            alert("Please enter a valid time in h:mm:ss.s format (e.g., 0:20:00.0).");
+            alert("Please enter a valid time in h:mm:ss.s or mm:ss.s format (e.g., 20:00.0).");
             return;
         }
 
@@ -94,12 +94,12 @@
         }
 
         if (mode === 'time' && !validateDistanceStrFormat(splitInput)) {
-            alert("Please enter valid numeric distances separated by commas or spaces.");
+            alert("Please enter valid numeric distances separated by commas, spaces or newlines.");
             return;
         }
 
-        if (mode === 'distance' && !splitInput.split(/[, ]+/).every(validateTimeFormat)) {
-            alert("Please enter valid times in h:mm:ss.s format separated by commas or spaces (e.g., 0:02:30.0).");
+        if (mode === 'distance' && !splitInput.split(/[\s,]+/).every(validateTimeFormat)) {
+            alert("Please enter valid times in h:mm:ss.s or mm:ss.s format separated by commas, spaces or newlines (e.g., 02:30.0).");
             return;
         }
 
