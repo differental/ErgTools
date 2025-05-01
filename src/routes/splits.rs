@@ -1,7 +1,9 @@
 use actix_web::{post, web::Json, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{format_time, parse_time, process_time_splits};
+use ergtools::{process_distance_splits, process_time_splits};
+
+use crate::utils::{format_time, parse_time};
 
 // pace shows splits for 500m
 const PACE_STANDARD: f64 = 500_f64; 
@@ -38,8 +40,8 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
 
     match mode {
         Mode::Time => {
-            let known = parse_time(&known_interval);
-            let target = parse_time(&target_interval);
+            let known = parse_time(&known_interval).expect("Invalid known time format");
+            let target = parse_time(&target_interval).expect("Invalid known time format");
 
             let splits = split_input
                 .split(|c| c == ',' || c == ' ')
@@ -62,8 +64,6 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
                 }
             }).collect::<Vec<SplitResult>>();
 
-            println!("Parsed Time Mode:\n  known: {:?}\n  target: {:?}\n  new splits: {:?}", known, target, new_splits);
-
             return HttpResponse::Ok().json(result);
         },
         Mode::Distance => {
@@ -75,26 +75,25 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
             let splits = split_input
                 .split(|c| c == ',' || c == ' ')
                 .filter(|s| !s.trim().is_empty())
-                .map(|s| parse_time(s))
+                .map(|s| parse_time(s).expect("Invalid splits time format"))
                 .collect::<Vec<f64>>();
 
-            println!("Parsed Distance Mode:\n  known: {}\n  target: {}\n  splits: {:?}", known, target, splits);
-        },
-    }
+            let new_splits = process_distance_splits(known, target, splits);
 
-    // Dummy return
-    HttpResponse::Ok().json(vec![
-        SplitResult {
-            time: "Example time".to_string(),
-            distance: "Example distance".to_string(),
-            pace: "Example pace".to_string(),
-            watts: "Example watts".to_string()
-        },
-        SplitResult {
-            time: "Example time".to_string(),
-            distance: "Example distance".to_string(),
-            pace: "Example pace".to_string(),
-            watts: "Example watts".to_string()
-        },
-    ])
+            let mut cumulative_distance = 0_u32;
+
+            let result = new_splits.iter().map(|x| {
+                cumulative_distance += x.0;
+                let raw_pace = x.1 / (x.0 as f64);
+                SplitResult {
+                    time: format_time(x.1),
+                    distance: cumulative_distance.to_string(),
+                    pace: format_time(raw_pace * PACE_STANDARD),
+                    watts: format!("{:.1}", 2.80 * raw_pace.powi(-3))
+                }
+            }).collect::<Vec<SplitResult>>();
+
+            return HttpResponse::Ok().json(result);
+        }
+    }
 }
