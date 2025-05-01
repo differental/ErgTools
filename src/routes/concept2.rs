@@ -18,7 +18,7 @@ pub struct Concept2Request {
 
 async fn fetch_concept2_data(url: String) -> Vec<Concept2DataPoint> {
     let re =
-        Regex::new(r"^https://log\.concept2\.com/(?:share|profile)/\d+/(?:log/)?\d+$").unwrap();
+        Regex::new(r"^https://log\.concept2\.com/(?:share|profile)/\d+/(?:log/)?\d+/?$").unwrap();
 
     if !re.is_match(&url) {
         panic!("URL invalid");

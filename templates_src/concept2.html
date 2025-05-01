@@ -3,7 +3,7 @@
 {% block title %}Concept2 Tool - ErgTools{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">Concept2 Log Analyzer</h1>
+<h1 class="text-2xl font-bold mb-4">Concept2 Log Analyser</h1>
 
 <form id="concept2-form" class="space-y-4">
     <label class="block font-medium">Concept2 Workout URL:</label>
@@ -46,6 +46,10 @@
         return /^\d+:[0-5]\d:[0-5]\d(\.\d)?$/.test(str.trim());
     }
 
+    function validateUrl(str) {
+        return /^https:\/\/log\.concept2\.com\/(?:share|profile)\/\d+\/(?:log\/)?\d+\/?$/.test(str.trim());
+    }
+
     function submitConcept2() {
         const mode = document.querySelector('input[name="mode"]:checked').value;
 
@@ -63,6 +67,11 @@
 
         if (mode === 'distance' && isNaN(parseInt(targetIntervalStr))) {
             alert("Please enter a valid numeric distance (e.g., 500).");
+            return;
+        }
+
+        if (mode === 'time' && !validateUrl(url)) {
+            alert("Please enter a valid concept2 workout url.");
             return;
         }
 

@@ -1,3 +1,3 @@
 # ErgTools
 
-WIP. Not much to see here.
+A set of simple tools for rowing performance recording and analysis.
