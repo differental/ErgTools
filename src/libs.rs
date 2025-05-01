@@ -114,7 +114,7 @@ pub fn process_concept2_time(data: Vec<Concept2DataPoint>, target_time: f64) -> 
     // Remaining bits
     // (last_datapoint_time_ds - (next_split_time_ds - target_time * 10.0)) / 10.0,
     result.push((
-        (last_datapoint_time_ds - next_split_time_ds) / 10.0 + target_time,
+        target_time - (next_split_time_ds - last_datapoint_time_ds) / 10.0,
         ((last_datapoint_distance_dm - cumulative_split_distance_dm) / 10.0) as u32,
     ));
 
@@ -156,7 +156,7 @@ pub fn process_concept2_distance(
     // Remaining bits
     // ((last_datapoint_distance_dm - (next_split_distance_dm - target_distance as f64 * 10.0)) / 10.0) as u32
     result.push((
-        ((last_datapoint_distance_dm - next_split_distance_dm) / 10.0) as u32 + target_distance,
+        target_distance - ((next_split_distance_dm - last_datapoint_distance_dm) / 10.0) as u32,
         (last_datapoint_time_ds - cumulative_split_time_ds) / 10.0,
     ));
 
