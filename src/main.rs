@@ -17,6 +17,10 @@ mod libs;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    const ADDR: &str = "127.0.0.1";
+    const PORT: u16 = 3002;
+    println!("Running webserver at {ADDR}:{PORT}");
+
     HttpServer::new(|| {
         App::new()
             .service(serve_static_index)
@@ -25,7 +29,7 @@ async fn main() -> std::io::Result<()> {
             .service(serve_calculator)
             .service(serve_concept2)
     })
-    .bind(("127.0.0.1", 3000))?
+    .bind((ADDR, PORT))?
     .run()
     .await
 }

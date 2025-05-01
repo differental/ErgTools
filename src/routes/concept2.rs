@@ -3,10 +3,10 @@ use regex::Regex;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use serde::Deserialize;
 
-use crate::constants::{PACE_STANDARD, S3_HEADER};
+use crate::constants::PACE_STANDARD;
 use crate::libs::{process_concept2_distance, process_concept2_time};
 use crate::types::{Concept2DataPoint, Mode, SplitResult};
-use crate::utils::{format_time, parse_time};
+use crate::utils::{format_time, get_concept2_request_headers, parse_time};
 
 #[derive(Debug, Deserialize)]
 pub struct Concept2Request {
@@ -56,7 +56,7 @@ async fn fetch_concept2_data(url: String) -> Vec<Concept2DataPoint> {
     let client = reqwest::Client::new();
     let res = client
         .get(url)
-        .headers(S3_HEADER.clone())
+        .headers(get_concept2_request_headers().await)
         .send()
         .await
         .unwrap();
