@@ -1,9 +1,7 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
+mod routes;
+use routes::pages::{serve_static_calculator, serve_static_concept2, serve_static_index};
 
 #[post("/echo")]
 async fn echo(req_body: String) -> impl Responder {
@@ -18,7 +16,9 @@ async fn manual_hello() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
-            .service(hello)
+            .service(serve_static_index)
+            .service(serve_static_calculator)
+            .service(serve_static_concept2)
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
     })
