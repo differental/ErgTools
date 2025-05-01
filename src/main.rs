@@ -1,3 +1,4 @@
+use actix_files::Files;
 use actix_web::{App, HttpServer};
 
 mod routes;
@@ -28,6 +29,7 @@ async fn main() -> std::io::Result<()> {
             .service(serve_static_concept2)
             .service(serve_calculator)
             .service(serve_concept2)
+            .service(Files::new("/", "static/"))
     })
     .bind((ADDR, PORT))?
     .run()
