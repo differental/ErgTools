@@ -1,6 +1,4 @@
-mod types;
-
-use types::Concept2DataPoint;
+use crate::types::Concept2DataPoint;
 
 /// (known_time, target_time, split_distances:Vec<u32>) -> Vec<(time: f64, dist: u32)>
 /// Note that this does not follow concept2's splits tables for "time intervals".
@@ -85,7 +83,32 @@ pub fn process_distance_splits(
 }
 
 pub fn process_concept2_time(data: Vec<Concept2DataPoint>, target_time: f64) -> Vec<(f64, u32)> {
-    vec![]
+    let mut last_datapoint_time_ds = 0.0;
+    let mut last_datapoint_distance_dm = 0.0;
+    let mut cumulative_split_distance_dm = 0.0;
+
+    let mut next_split_time_ds = target_time * 10.0;
+
+    let mut result = Vec::<(f64, u32)>::new();
+
+    for item in data {
+        if item.time_ds as f64  >= next_split_time_ds {
+            let new_dist_dm = last_datapoint_distance_dm + (item.distance_dm as f64 - last_datapoint_distance_dm) / (item.time_ds as f64 - last_datapoint_time_ds) * (next_split_time_ds - last_datapoint_time_ds);
+
+            result.push((next_split_time_ds / 10.0, ((new_dist_dm - cumulative_split_distance_dm) / 10.0) as u32));
+
+            cumulative_split_distance_dm = new_dist_dm;
+            next_split_time_ds += target_time * 10.0;
+        } else {
+            last_datapoint_time_ds = item.time_ds as f64;
+            last_datapoint_distance_dm = item.distance_dm as f64;
+        }
+    }
+
+    // Remaining bits
+    result.push((last_datapoint_time_ds - (next_split_time_ds - target_time * 10.0), ((last_datapoint_distance_dm - cumulative_split_distance_dm) / 10.0) as u32));
+
+    result
 }
 
 #[cfg(test)]

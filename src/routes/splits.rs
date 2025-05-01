@@ -1,13 +1,11 @@
 use actix_web::{HttpResponse, Responder, post, web::Json};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 
-use ergtools::{process_distance_splits, process_time_splits};
-
-use crate::types::Mode;
+use crate::constants::PACE_STANDARD;
+use crate::libs::{process_distance_splits, process_time_splits};
+use crate::types::{Mode, SplitResult};
 use crate::utils::{format_time, parse_time};
 
-// pace shows splits for 500m
-const PACE_STANDARD: f64 = 500_f64;
 
 #[derive(Debug, Deserialize)]
 pub struct SplitRequest {
@@ -18,14 +16,6 @@ pub struct SplitRequest {
     pub target_interval: String,
     #[serde(rename = "splitInput")]
     pub split_input: String,
-}
-
-#[derive(Serialize)]
-pub struct SplitResult {
-    pub time: String,
-    pub distance: String,
-    pub pace: String,
-    pub watts: String,
 }
 
 #[post("/api/splits")]
@@ -40,7 +30,7 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
     match mode {
         Mode::Time => {
             let known = parse_time(&known_interval).expect("Invalid known time format");
-            let target = parse_time(&target_interval).expect("Invalid known time format");
+            let target = parse_time(&target_interval).expect("Invalid target time format");
 
             let splits = split_input
                 .split([',', ' ', '\n', '\r'])

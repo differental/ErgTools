@@ -6,9 +6,9 @@ use reqwest::header::{
 };
 use serde::{Deserialize, Serialize};
 
-use ergtools::{process_distance_splits, process_time_splits};
-
-use crate::types::{Concept2DataPoint, Mode};
+use crate::constants::PACE_STANDARD;
+use crate::libs::{process_concept2_time, process_distance_splits, process_time_splits};
+use crate::types::{Concept2DataPoint, Mode, SplitResult};
 use crate::utils::{format_time, parse_time};
 
 #[derive(Debug, Deserialize)]
@@ -19,15 +19,7 @@ pub struct Concept2Request {
     pub target_interval: String,
 }
 
-#[post("/api/concept2")]
-pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
-    let Concept2Request {
-        mode,
-        url,
-        target_interval,
-    } = req.into_inner();
-    println!("{:?} {} {} ", mode, url, target_interval);
-
+async fn fetch_concept2_data(url: String) -> Vec<Concept2DataPoint> {
     let re =
         Regex::new(r"^https://log\.concept2\.com/(?:share|profile)/\d+/(?:log/)?\d+$").unwrap();
 
@@ -101,8 +93,43 @@ pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
     let client = reqwest::Client::new();
     let res = client.get(url).headers(headers).send().await.unwrap();
 
-    let body: Vec<Concept2DataPoint> = res.json().await.unwrap();
-    println!("{:?}", body);
+    res.json().await.unwrap()
+}
 
-    HttpResponse::Ok().json(vec![100])
+#[post("/api/concept2")]
+pub async fn serve_concept2(req: Json<Concept2Request>) -> impl Responder {
+    let Concept2Request {
+        mode,
+        url,
+        target_interval,
+    } = req.into_inner();
+
+    let data = fetch_concept2_data(url).await;
+
+    match mode {
+        Mode::Time => {
+            let target = parse_time(&target_interval).expect("Invalid target time format");
+
+            let mut cumulative_time = 0_f64;
+
+            let result = process_concept2_time(data, target)
+                .iter()
+                .map(|x| {
+                    cumulative_time += x.0;
+                    let raw_pace = x.0 / (x.1 as f64);
+                    SplitResult {
+                        time: format_time(cumulative_time),
+                        distance: x.1.to_string(),
+                        pace: format_time(raw_pace * PACE_STANDARD),
+                        watts: format!("{:.1}", 2.80 * raw_pace.powi(-3)),
+                    }
+                })
+                .collect::<Vec<SplitResult>>();
+
+            HttpResponse::Ok().json(result)
+        },
+        Mode::Distance => {
+            HttpResponse::Ok().json(process_concept2_time(data, 600.0))
+        }
+    }
 }
