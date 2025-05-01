@@ -3,17 +3,11 @@ use serde::{Deserialize, Serialize};
 
 use ergtools::{process_distance_splits, process_time_splits};
 
+use crate::types::Mode;
 use crate::utils::{format_time, parse_time};
 
 // pace shows splits for 500m
 const PACE_STANDARD: f64 = 500_f64; 
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Mode {
-    Time,
-    Distance,
-}
 
 #[derive(Debug, Deserialize)]
 pub struct SplitRequest {
@@ -44,7 +38,7 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
             let target = parse_time(&target_interval).expect("Invalid known time format");
 
             let splits = split_input
-                .split(|c| c == ',' || c == ' ')
+                .split([',', ' ', '\n', '\r'])
                 .filter(|s| !s.trim().is_empty())
                 .map(|s| s.trim().parse::<u32>().expect("Invalid distance value"))
                 .collect::<Vec<u32>>();
@@ -64,7 +58,7 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
                 }
             }).collect::<Vec<SplitResult>>();
 
-            return HttpResponse::Ok().json(result);
+            HttpResponse::Ok().json(result)
         },
         Mode::Distance => {
             // value is a distance (e.g., "500")
@@ -73,7 +67,7 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
             let target = target_interval.trim().parse::<u32>().expect("Invalid target distance");
 
             let splits = split_input
-                .split(|c| c == ',' || c == ' ')
+                .split([',', ' ', '\n', '\r'])
                 .filter(|s| !s.trim().is_empty())
                 .map(|s| parse_time(s).expect("Invalid splits time format"))
                 .collect::<Vec<f64>>();
@@ -93,7 +87,7 @@ pub async fn serve_calculator(req: Json<SplitRequest>) -> impl Responder {
                 }
             }).collect::<Vec<SplitResult>>();
 
-            return HttpResponse::Ok().json(result);
+            HttpResponse::Ok().json(result)
         }
     }
 }

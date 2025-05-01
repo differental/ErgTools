@@ -1,3 +1,7 @@
+mod types;
+
+use types::Concept2DataPoint;
+
 /// (known_time, target_time, split_distances:Vec<u32>) -> Vec<(time: f64, dist: u32)>
 /// Note that this does not follow concept2's splits tables for "time intervals".
 ///     Concept2 times are cumulative and distances are not. Here they are both not cumulative.
@@ -64,6 +68,14 @@ pub fn process_distance_splits(known_distance: u32, target_distance: u32, split_
         curr_measured_time = curr_measured_distance as f64 / latest_speed;
     }
     new_split_times
+}
+
+pub fn process_concept2_time(data: Vec<Concept2DataPoint>, target_time: f64) -> Vec<(f64, u32)> {
+
+    
+
+
+    vec![]
 }
 
 #[cfg(test)]

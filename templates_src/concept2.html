@@ -9,8 +9,22 @@
     <label class="block font-medium">Concept2 Workout URL:</label>
     <input type="text" id="url" class="w-full p-2 border border-gray-300 rounded" />
 
+    <div>
+        <label class="block font-medium">Split Type:</label>
+        <div class="mt-1 space-x-4">
+            <label><input type="radio" name="mode" value="time" checked onchange="toggleInputs()"> Time Splits</label>
+            <label><input type="radio" name="mode" value="distance" onchange="toggleInputs()"> Distance Splits</label>
+        </div>
+    </div>
+
+    <div>
+        <label class="block font-medium">Desired Interval:</label>
+        <input type="text" id="target-interval-time" class="mt-1 w-full p-2 border border-gray-300 rounded" placeholder="Time in h:mm:ss.s (e.g., 0:04:00.0)" />
+        <input type="text" id="target-interval-distance" class="mt-1 w-full p-2 border border-gray-300 rounded hidden" placeholder="Distance in metres (e.g., 500)" />
+    </div>
+
     <button type="button" onclick="submitConcept2()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Fetch Data
+        Fetch & Calculate
     </button>
 </form>
 
@@ -19,31 +33,63 @@
 </div>
 
 <script>
-function submitConcept2() {
-    const url = document.getElementById("url").value;
+    function toggleInputs() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
 
-    fetch('/api/concept2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-    })
-    .then(res => res.json())
-    .then(data => {
-        const container = document.getElementById("concept2-result");
-        if (!data || data.length === 0) {
-            container.innerHTML = "<p>No data found.</p>";
+        // Tarhet value
+        document.getElementById('target-interval-time').classList.toggle('hidden', mode !== 'time');
+        document.getElementById('target-interval-distance').classList.toggle('hidden', mode !== 'distance');
+    }
+
+    function validateTimeFormat(str) {
+        // Format: h:mm:ss.s (e.g., 0:02:30.0)
+        return /^\d+:[0-5]\d:[0-5]\d(\.\d)?$/.test(str.trim());
+    }
+
+    function submitConcept2() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+
+        const targetIntervalStr = mode === 'time'
+            ? document.getElementById("target-interval-time").value.trim()
+            : document.getElementById("target-interval-distance").value.trim();
+
+        const url = document.getElementById("url").value;
+
+        // Input validation
+        if (mode === 'time' && !validateTimeFormat(targetIntervalStr)) {
+            alert("Please enter a valid time in h:mm:ss.s format (e.g., 0:20:00.0).");
             return;
         }
-        const rows = data.map(row => 
-            `<tr><td class="border px-4 py-2">${row.time}</td><td class="border px-4 py-2">${row.distance}</td><td class="border px-4 py-2">${row.split}</td></tr>`
-        ).join('');
-        container.innerHTML = `
-            <table class="w-full border mt-4">
-                <thead><tr><th class="border px-4 py-2">Time</th><th class="border px-4 py-2">Distance</th><th class="border px-4 py-2">Split</th></tr></thead>
-                <tbody>${rows}</tbody>
-            </table>
-        `;
-    });
-}
+
+        if (mode === 'distance' && isNaN(parseInt(targetIntervalStr))) {
+            alert("Please enter a valid numeric distance (e.g., 500).");
+            return;
+        }
+
+        fetch('/api/concept2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, mode, targetIntervalStr })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById("concept2-result");
+            if (!data || data.length === 0) {
+                container.innerHTML = "<p>No data found.</p>";
+                return;
+            }
+            const rows = data.map(row => 
+                `<tr><td class="border px-4 py-2">${row.time}</td><td class="border px-4 py-2">${row.distance}</td><td class="border px-4 py-2">${row.split}</td></tr>`
+            ).join('');
+            container.innerHTML = `
+                <table class="w-full border mt-4">
+                    <thead><tr><th class="border px-4 py-2">Time</th><th class="border px-4 py-2">Distance</th><th class="border px-4 py-2">Split</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        });
+        
+        document.addEventListener('DOMContentLoaded', toggleInputs);
+    }
 </script>
 {% endblock %}
