@@ -2,8 +2,20 @@
 name = "ergtools"
 version = "0.1.0"
 edition = "2024"
+license = "AGPL-3.0-only"
+build = "build.rs"
 
 [dependencies]
 actix-web = "4.10"
 askama = "0.14"
 serde = { version = "1.0", features = ["derive"] }
+
+[build-dependencies]
+html-minifier = "5.0"
+
+[profile.release-prod]
+inherits = "release"
+lto = "fat"
+strip = true
+codegen-units = 1
+panic = "abort"
