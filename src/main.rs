@@ -1,7 +1,7 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpServer};
 
 mod routes;
-use routes::{pages::{serve_static_calculator, serve_static_concept2, serve_static_index}, splits::{serve_calculator}};
+use routes::{pages::{serve_static_calculator, serve_static_concept2, serve_static_index}, splits::serve_calculator};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
