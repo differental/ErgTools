@@ -1,4 +1,4 @@
-use actix_web::{get, HttpResponse};
+use actix_web::{HttpResponse, get};
 use askama::Template;
 
 #[derive(Template)]
@@ -13,7 +13,6 @@ pub async fn serve_static_index() -> HttpResponse {
     HttpResponse::Ok().body(rendered)
 }
 
-
 #[derive(Template)]
 #[template(path = "concept2.html")]
 struct Concept2PageTemplate;
@@ -25,7 +24,6 @@ pub async fn serve_static_concept2() -> HttpResponse {
 
     HttpResponse::Ok().body(rendered)
 }
-
 
 #[derive(Template)]
 #[template(path = "calculator.html")]
