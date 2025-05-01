@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Concept2 Tool - Row Tools{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Concept2 Log Analyzer</h1>
+
+<form id="concept2-form" class="space-y-4">
+    <label class="block font-medium">Concept2 Workout URL:</label>
+    <input type="text" id="url" class="w-full p-2 border border-gray-300 rounded" />
+
+    <button type="button" onclick="submitConcept2()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        Fetch Data
+    </button>
+</form>
+
+<div id="concept2-result" class="mt-6">
+    <!-- Workout data will appear here -->
+</div>
+
+<script>
+function submitConcept2() {
+    const url = document.getElementById("url").value;
+
+    fetch('/api/concept2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("concept2-result");
+        if (!data || data.length === 0) {
+            container.innerHTML = "<p>No data found.</p>";
+            return;
+        }
+        const rows = data.map(row => 
+            `<tr><td class="border px-4 py-2">${row.time}</td><td class="border px-4 py-2">${row.distance}</td><td class="border px-4 py-2">${row.split}</td></tr>`
+        ).join('');
+        container.innerHTML = `
+            <table class="w-full border mt-4">
+                <thead><tr><th class="border px-4 py-2">Time</th><th class="border px-4 py-2">Distance</th><th class="border px-4 py-2">Split</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    });
+}
+</script>
+{% endblock %}

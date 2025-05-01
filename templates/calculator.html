@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Split Calculator - Row Tools{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Split Calculator</h1>
+
+<form id="calc-form" class="space-y-4">
+    <div>
+        <label class="block font-medium">Splits:</label>
+        <div class="mt-1 space-x-4">
+            <label><input type="radio" name="mode" value="time" checked> Time Splits</label>
+            <label><input type="radio" name="mode" value="distance"> Distance Splits</label>
+        </div>
+    </div>
+
+    <div>
+        <label class="block font-medium">Reference Value (e.g. 500 or 2:00):</label>
+        <input type="text" id="value" class="mt-1 w-full p-2 border border-gray-300 rounded" />
+    </div>
+
+    <div>
+        <label class="block font-medium">Split Data (comma or space separated):</label>
+        <textarea id="splits" rows="4" class="mt-1 w-full p-2 border border-gray-300 rounded"></textarea>
+    </div>
+
+    <button type="button" onclick="submitCalculator()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Calculate
+    </button>
+</form>
+
+<div id="calc-result" class="mt-6">
+    <!-- Results will appear here -->
+</div>
+
+<script>
+function submitCalculator() {
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const value = document.getElementById("value").value;
+    const splits = document.getElementById("splits").value;
+
+    fetch('/api/splits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode, value, splitInput: splits })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("calc-result");
+        if (!data || data.length === 0) {
+            container.innerHTML = "<p>No results found.</p>";
+            return;
+        }
+        const rows = data.map(row => `<tr><td class="border px-4 py-2">${row.label}</td><td class="border px-4 py-2">${row.value}</td></tr>`).join('');
+        container.innerHTML = `
+            <table class="w-full border mt-4">
+                <thead><tr><th class="border px-4 py-2">Split</th><th class="border px-4 py-2">Value</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    });
+}
+</script>
+{% endblock %}
