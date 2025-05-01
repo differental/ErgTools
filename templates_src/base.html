@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 
@@ -34,5 +34,13 @@
     <footer class="bg-gray-200 text-center p-4 text-sm text-gray-700">
         © 2025 <a href="https://github.com/differental/ergtools" target="_blank">ErgTools</a>, With ❤️ by <a href="https://github.com/differental" target="_blank">Brian</a>
     </footer>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js")
+                .then(() => console.log("Service Worker registered!"))
+                .catch(err => console.log("Service Worker registration failed:", err));
+        }
+    </script>
 </body>
 </html>
