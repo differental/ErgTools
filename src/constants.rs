@@ -10,6 +10,9 @@ use reqwest::{
 // pace shows splits for 500m
 pub const PACE_STANDARD: f64 = 500.0;
 
+// cargo package version as specified in Cargo.toml
+pub const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 // client for fetching webpage
 pub static CLIENT_HTML: Lazy<Client> = Lazy::new(|| {
     let mut headers = HeaderMap::new();
