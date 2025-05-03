@@ -1,12 +1,11 @@
 use actix_web::{HttpResponse, Responder, post, web::Json};
 use regex::Regex;
-use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use serde::Deserialize;
 
-use crate::constants::PACE_STANDARD;
+use crate::constants::{CLIENT_HTML, CLIENT_S3, PACE_STANDARD};
 use crate::libs::{process_concept2_distance, process_concept2_time};
 use crate::types::{Concept2DataPoint, Mode, SplitResult};
-use crate::utils::{format_time, get_concept2_request_headers, parse_time};
+use crate::utils::{format_time, parse_time};
 
 #[derive(Debug, Deserialize)]
 pub struct Concept2Request {
@@ -24,11 +23,7 @@ async fn fetch_concept2_data(url: &str) -> Vec<Concept2DataPoint> {
         panic!("URL invalid");
     }
 
-    let mut headers = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0"));
-
-    let client = reqwest::Client::new();
-    let res = client.get(url).headers(headers).send().await.unwrap();
+    let res = CLIENT_HTML.get(url).send().await.unwrap();
     let body = res.text().await.unwrap();
 
     let user_id_re = Regex::new(r#"var\s+user_id\s*=\s*(\d+);"#).unwrap();
@@ -53,15 +48,10 @@ async fn fetch_concept2_data(url: &str) -> Vec<Concept2DataPoint> {
         user_id, stroke_file
     );
 
-    let client = reqwest::Client::new();
-    let res = client
-        .get(url)
-        .headers(get_concept2_request_headers().await)
-        .send()
-        .await
-        .unwrap();
+    let res = CLIENT_S3.get(url).send().await.unwrap();
+    let results: Vec<Concept2DataPoint> = res.json().await.unwrap();
 
-    res.json().await.unwrap()
+    results
 }
 
 #[post("/api/concept2")]
