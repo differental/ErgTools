@@ -15,19 +15,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup toolchain
+      - name: Build in Debian 12 container
         run: |
-          rustup target add x86_64-unknown-linux-musl
-          sudo apt install -y musl-tools
-
-      - name: Build project
-        run: cargo build --profile release-prod --target x86_64-unknown-linux-musl
+          docker run --rm -v ${{ github.workspace }}:/volume -w /volume debian:12 bash -c '
+            apt-get update &&
+            apt-get install -y curl build-essential git pkg-config libssl-dev ca-certificates &&
+            curl https://sh.rustup.rs -sSf | sh -s -- -y &&
+            source $HOME/.cargo/env &&
+            rustup target add x86_64-unknown-linux-gnu &&
+            CARGO_TERM_COLOR=always cargo build --profile release-prod
+          '
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ergtools
-          path: target/x86_64-unknown-linux-musl/release-prod/ergtools
+          path: target/release-prod/ergtools
 
   deploy:
     runs-on: ubuntu-latest
