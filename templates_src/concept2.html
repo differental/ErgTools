@@ -84,7 +84,7 @@
         .then(data => {
             const container = document.getElementById("concept2-result");
             if (!data || data.length === 0) {
-                container.innerHTML = "<p>No data found.</p>";
+                container.innerHTML = "<p>No data found, or your request has more than 100 splits and is thus deemed unreasonable.</p>";
                 return;
             }
             const rows = data.map(row => `<tr><td class="border px-4 py-2">${row.time}</td><td class="border px-4 py-2">${row.distance}</td><td class="border px-4 py-2">${row.pace}</td><td class="border px-4 py-2">${row.watts}</td></tr>`).join('');
