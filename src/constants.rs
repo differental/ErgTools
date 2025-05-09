@@ -1,4 +1,3 @@
-use once_cell::sync::Lazy;
 use reqwest::{
     Client,
     header::{
@@ -6,6 +5,7 @@ use reqwest::{
         HeaderValue, ORIGIN, PRAGMA, REFERER, USER_AGENT,
     },
 };
+use std::sync::LazyLock;
 
 // pace shows splits for 500m
 pub const PACE_STANDARD: f64 = 500.0;
@@ -14,7 +14,7 @@ pub const PACE_STANDARD: f64 = 500.0;
 pub const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // client for fetching webpage
-pub static CLIENT_HTML: Lazy<Client> = Lazy::new(|| {
+pub static CLIENT_HTML: LazyLock<Client> = LazyLock::new(|| {
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"));
 
@@ -22,7 +22,7 @@ pub static CLIENT_HTML: Lazy<Client> = Lazy::new(|| {
 });
 
 // client for fetching s3
-pub static CLIENT_S3: Lazy<Client> = Lazy::new(|| {
+pub static CLIENT_S3: LazyLock<Client> = LazyLock::new(|| {
     let mut headers = HeaderMap::new();
     headers.insert(
         ACCEPT,
