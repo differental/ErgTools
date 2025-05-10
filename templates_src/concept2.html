@@ -36,7 +36,7 @@
     function toggleInputs() {
         const mode = document.querySelector('input[name="mode"]:checked').value;
 
-        // Tarhet value
+        // Target value
         document.getElementById('target-interval-time').classList.toggle('hidden', mode !== 'time');
         document.getElementById('target-interval-distance').classList.toggle('hidden', mode !== 'distance');
     }
