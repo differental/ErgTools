@@ -1,4 +1,6 @@
 name: CI Deploy
+permissions:
+  contents: read
 
 on:
   push:
