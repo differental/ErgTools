@@ -48,8 +48,8 @@ async fn serve_embedded_assets(path: web::Path<String>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    const ADDR: &str = "127.0.0.1";
-    const PORT: u16 = 3002;
+    const ADDR: &str = "0.0.0.0";
+    const PORT: u16 = 3000;
     println!("Running webserver at {ADDR}:{PORT}");
 
     HttpServer::new(|| {
