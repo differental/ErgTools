@@ -11,7 +11,7 @@ askama = { version = "0.14", default-features = false, features = ["config", "de
 mime_guess = "2.0"
 regex = "1.12"
 reqwest = { version = "0.12", default-features = false, features = ["json", "gzip"] }
-rust-embed = "8.8"
+rust-embed = "8.9"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 
 [build-dependencies]
