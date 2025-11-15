@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: final
+    restart: unless-stopped
     ports:
       - 127.0.0.1:3002:3000
 
