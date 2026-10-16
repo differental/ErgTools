@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG RUST_VERSION=1.96.0
+ARG RUST_VERSION=1.99.1
 ARG APP_NAME=ergtools
 
 FROM rust:${RUST_VERSION}-alpine AS build
@@ -24,7 +24,6 @@ cp ./target/release-prod/$APP_NAME /bin/server
 
 
 FROM alpine:3.24 AS final
-
 
 ARG UID=10001
 RUN adduser \
